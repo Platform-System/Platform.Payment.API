@@ -22,6 +22,7 @@ jobs:
     secrets: inherit
     with:
       project_path: 'Platform.Payment.sln'
+      test_path: 'Platform.Payment.API.Tests/Platform.Payment.API.Tests.csproj'
       dependencies: 'Platform-System/Platform.Api,Platform-System/Platform.Application,Platform-System/Platform.Infrastructure,Platform-System/Platform.SystemContext,Platform-System/Platform.BuildingBlocks,Platform-System/Platform.SharedKernel,Platform-System/Platform.Domain,Platform-System/Platform.Contracts,Platform-System/Platform.Messaging'
       push_image: true
       image_name: 'platform-payment-api'

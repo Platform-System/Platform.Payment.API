@@ -1,8 +1,11 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Platform.BuildingBlocks.Responses;
 using Platform.Contracts.Payments;
 using Platform.Payment.API.Application.Features.Payments.Commands.ProcessWebhook;
+using Platform.Payment.API.Infrastructure.Configurations;
+using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
 
@@ -13,13 +16,21 @@ namespace Platform.Payment.API.Presentation.Http;
 public sealed class PaymentsController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly SandboxPaymentOptions _sandboxOptions;
+    private readonly IWebHostEnvironment _environment;
 
-    public PaymentsController(ISender sender)
+    public PaymentsController(
+        ISender sender,
+        IOptions<SandboxPaymentOptions> sandboxOptions,
+        IWebHostEnvironment environment)
     {
         _sender = sender;
+        _sandboxOptions = sandboxOptions.Value;
+        _environment = environment;
     }
 
     [HttpPost("webhooks/{provider}")]
+    [AllowAnonymous]
     public async Task<IActionResult> HandleWebhook(string provider, CancellationToken cancellationToken)
     {
         using var reader = new StreamReader(Request.Body);
@@ -33,6 +44,9 @@ public sealed class PaymentsController : ControllerBase
     [HttpGet("sandbox/checkout/{referenceCode:long}")]
     public IActionResult SandboxCheckout(long referenceCode, [FromQuery] string? paymentLinkId)
     {
+        if (!IsSandboxEnabled())
+            return NotFound();
+
         var encodedPaymentLinkId = WebUtility.HtmlEncode(paymentLinkId ?? string.Empty);
         var successUrl = $"/api/payments/sandbox/complete/{referenceCode}?paymentLinkId={Uri.EscapeDataString(paymentLinkId ?? string.Empty)}&result=success";
         var cancelUrl = $"/api/payments/sandbox/complete/{referenceCode}?paymentLinkId={Uri.EscapeDataString(paymentLinkId ?? string.Empty)}&result=cancel";
@@ -170,6 +184,9 @@ public sealed class PaymentsController : ControllerBase
         [FromQuery] string? result,
         CancellationToken cancellationToken)
     {
+        if (!IsSandboxEnabled())
+            return NotFound();
+
         var code = string.Equals(result, "cancel", StringComparison.OrdinalIgnoreCase) ? "99" : "00";
         var payload = JsonSerializer.Serialize(new
         {
@@ -191,5 +208,10 @@ public sealed class PaymentsController : ControllerBase
             referenceCode,
             paymentLinkId
         });
+    }
+
+    private bool IsSandboxEnabled()
+    {
+        return _sandboxOptions.Enabled && _environment.IsDevelopment();
     }
 }
