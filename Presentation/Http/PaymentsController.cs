@@ -49,6 +49,7 @@ public sealed class PaymentsController : ControllerBase
     /// Shows the sandbox checkout page.
     /// </summary>
     [HttpGet("sandbox/checkout/{referenceCode:long}")]
+    [AllowAnonymous]
     public IActionResult SandboxCheckout(long referenceCode, [FromQuery] string? paymentLinkId)
     {
         if (!IsSandboxEnabled())
@@ -188,6 +189,7 @@ public sealed class PaymentsController : ControllerBase
     /// Completes a sandbox payment flow.
     /// </summary>
     [HttpGet("sandbox/complete/{referenceCode:long}")]
+    [AllowAnonymous]
     public async Task<IActionResult> SandboxComplete(
         long referenceCode,
         [FromQuery] string? paymentLinkId,

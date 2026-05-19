@@ -24,17 +24,17 @@ public sealed class PaymentAuthorizationMetadataTests
     }
 
     [Fact]
-    public void SandboxActions_DoNotAllowAnonymous()
+    public void SandboxActions_AllowAnonymous()
     {
-        AssertDoesNotAllowAnonymous(nameof(PaymentsController.SandboxCheckout));
-        AssertDoesNotAllowAnonymous(nameof(PaymentsController.SandboxComplete));
+        AssertAllowsAnonymous(nameof(PaymentsController.SandboxCheckout));
+        AssertAllowsAnonymous(nameof(PaymentsController.SandboxComplete));
     }
 
-    private static void AssertDoesNotAllowAnonymous(string methodName)
+    private static void AssertAllowsAnonymous(string methodName)
     {
         var method = typeof(PaymentsController).GetMethod(methodName);
 
         Assert.NotNull(method);
-        Assert.Null(method!.GetCustomAttributes(typeof(AllowAnonymousAttribute), inherit: true).SingleOrDefault());
+        Assert.NotNull(method!.GetCustomAttributes(typeof(AllowAnonymousAttribute), inherit: true).SingleOrDefault());
     }
 }
