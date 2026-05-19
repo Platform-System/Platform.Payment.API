@@ -13,6 +13,7 @@ namespace Platform.Payment.API.Presentation.Http;
 
 [Route("api/payments")]
 [ApiController]
+[Authorize]
 public sealed class PaymentsController : ControllerBase
 {
     private readonly ISender _sender;
