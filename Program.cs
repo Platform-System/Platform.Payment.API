@@ -9,6 +9,7 @@ builder.Services.AddApplication(typeof(Program).Assembly);
 builder.Services.AddPaymentInfrastructure(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddGrpc();
+builder.Services.AddPlatformRuntime();
 builder.Services.AddPlatformAuthentication(builder.Configuration);
 builder.Services.AddPlatformSwaggerJwt("Platform Payment API");
 
@@ -16,6 +17,7 @@ var app = builder.Build();
 
 await app.ApplyMigrationsAsync<PaymentDbContext>();
 
+app.UsePlatformRuntime();
 app.UseHttpsRedirection();
 app.UsePlatformSwagger();
 app.UsePlatformAuthentication();
