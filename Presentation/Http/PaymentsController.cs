@@ -30,6 +30,9 @@ public sealed class PaymentsController : ControllerBase
         _environment = environment;
     }
 
+    /// <summary>
+    /// Handles a payment webhook for the given provider.
+    /// </summary>
     [HttpPost("webhooks/{provider}")]
     [AllowAnonymous]
     public async Task<IActionResult> HandleWebhook(string provider, CancellationToken cancellationToken)
@@ -42,6 +45,9 @@ public sealed class PaymentsController : ControllerBase
         return result.ToActionResult();
     }
 
+    /// <summary>
+    /// Shows the sandbox checkout page.
+    /// </summary>
     [HttpGet("sandbox/checkout/{referenceCode:long}")]
     public IActionResult SandboxCheckout(long referenceCode, [FromQuery] string? paymentLinkId)
     {
@@ -178,6 +184,9 @@ public sealed class PaymentsController : ControllerBase
         return Content(html, "text/html");
     }
 
+    /// <summary>
+    /// Completes a sandbox payment flow.
+    /// </summary>
     [HttpGet("sandbox/complete/{referenceCode:long}")]
     public async Task<IActionResult> SandboxComplete(
         long referenceCode,
