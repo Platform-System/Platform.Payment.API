@@ -13,6 +13,7 @@ public sealed class PaymentDbContext : BaseDbContext
     }
 
     public DbSet<PaymentTransactionModel> Payments { get; set; }
+    public DbSet<OutboxMessageModel> OutboxMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -4,9 +4,9 @@ using Platform.Application.Abstractions.Data;
 using Platform.Application.Messaging;
 using Platform.BuildingBlocks.Responses;
 using Platform.Contracts.Messages.Payments;
+using Platform.Payment.API.Application.Abstractions.Messaging;
 using Platform.Payment.API.Application.Abstractions.Providers;
 using Platform.Payment.API.Application.Features.Payments.Mappers;
-using Platform.Payment.API.Application.Features.Payments.Notifications;
 using Platform.Payment.API.Domain.Enums;
 using Platform.Payment.API.Infrastructure.Persistence.Models;
 
@@ -16,13 +16,16 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEnumerable<IPaymentProvider> _paymentProviders;
+    private readonly IPaymentOutboxWriter _outboxWriter;
 
     public ProcessPaymentWebhookHandler(
         IUnitOfWork unitOfWork,
-        IEnumerable<IPaymentProvider> paymentProviders)
+        IEnumerable<IPaymentProvider> paymentProviders,
+        IPaymentOutboxWriter outboxWriter)
     {
         _unitOfWork = unitOfWork;
         _paymentProviders = paymentProviders;
+        _outboxWriter = outboxWriter;
     }
 
     public async Task<Result<Unit>> Handle(ProcessPaymentWebhookCommand command, CancellationToken cancellationToken)
@@ -72,7 +75,7 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
 
             paymentModel.ApplyDomainState(payment);
 
-            command.Events.Add(new PaymentSucceededNotification(
+            await _outboxWriter.EnqueueAsync(
                 new PaymentSucceeded
                 {
                     PaymentId = payment.Id,
@@ -84,7 +87,8 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
                     Amount = payment.Amount,
                     Currency = payment.Currency ?? string.Empty,
                     PaidAt = payment.PaidAt ?? DateTime.UtcNow
-                }));
+                },
+                cancellationToken);
 
             return Result<Unit>.Success(Unit.Value);
         }
@@ -95,7 +99,7 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
 
         paymentModel.ApplyDomainState(payment);
 
-        command.Events.Add(new PaymentCancelledNotification(
+        await _outboxWriter.EnqueueAsync(
             new PaymentCancelled
             {
                 PaymentId = payment.Id,
@@ -107,7 +111,8 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
                 Amount = payment.Amount,
                 Currency = payment.Currency ?? string.Empty,
                 ReasonCode = webhook.Code
-            }));
+            },
+            cancellationToken);
 
         return Result<Unit>.Success(Unit.Value);
     }

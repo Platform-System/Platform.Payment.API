@@ -4,11 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Platform.Application.Abstractions.Data;
 using Platform.BuildingBlocks.Responses;
 using Platform.Contracts.Payments;
+using Platform.Contracts.Messages.Payments;
 using Platform.Domain.Common;
+using Platform.Payment.API.Application.Abstractions.Messaging;
 using Platform.Payment.API.Application.Abstractions.Providers;
 using Platform.Payment.API.Application.Common.Models;
 using Platform.Payment.API.Application.Features.Payments.Commands.ProcessWebhook;
-using Platform.Payment.API.Application.Features.Payments.Notifications;
 using Platform.Payment.API.Domain.Enums;
 using Platform.Payment.API.Infrastructure.Persistence.Models;
 using Xunit;
@@ -22,7 +23,8 @@ public sealed class ProcessPaymentWebhookHandlerTests
     {
         var handler = new ProcessPaymentWebhookHandler(
             new FakeUnitOfWork(new FakeRepository<PaymentTransactionModel>()),
-            []);
+            [],
+            new FakePaymentOutboxWriter());
 
         var result = await handler.Handle(
             new ProcessPaymentWebhookCommand("UnknownProvider", "{}"),
@@ -39,13 +41,13 @@ public sealed class ProcessPaymentWebhookHandlerTests
         var repository = new FakeRepository<PaymentTransactionModel>();
         var handler = new ProcessPaymentWebhookHandler(
             new FakeUnitOfWork(repository),
-            [new FakePaymentProvider("PayOS")]);
+            [new FakePaymentProvider("PayOS")],
+            new FakePaymentOutboxWriter());
 
         var command = new ProcessPaymentWebhookCommand("PayOS", "{invalid}");
         var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(command.Events);
         Assert.Equal(0, repository.FindCallCount);
     }
 
@@ -61,19 +63,21 @@ public sealed class ProcessPaymentWebhookHandlerTests
                 Code = "00"
             }
         };
+        var outboxWriter = new FakePaymentOutboxWriter();
         var repository = new FakeRepository<PaymentTransactionModel>();
-        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider]);
+        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider], outboxWriter);
         var command = new ProcessPaymentWebhookCommand("PayOS", "{}");
 
         var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
-        Assert.Empty(command.Events);
+        Assert.Empty(outboxWriter.SucceededMessages);
+        Assert.Empty(outboxWriter.CancelledMessages);
         Assert.Equal(2, repository.FindCallCount);
     }
 
     [Fact]
-    public async Task Handle_WhenWebhookCodeIsSuccess_MarksPaymentPaidAndAddsSucceededEvent()
+    public async Task Handle_WhenWebhookCodeIsSuccess_MarksPaymentPaidAndEnqueuesSucceededMessage()
     {
         var payment = CreatePayment(
             provider: "PayOS",
@@ -88,21 +92,22 @@ public sealed class ProcessPaymentWebhookHandlerTests
                 Code = "00"
             }
         };
+        var outboxWriter = new FakePaymentOutboxWriter();
         var repository = new FakeRepository<PaymentTransactionModel>(payment);
-        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider]);
+        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider], outboxWriter);
         var command = new ProcessPaymentWebhookCommand("PayOS", "{}");
 
         var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(PaymentStatus.Paid, payment.Status);
-        var notification = Assert.IsType<PaymentSucceededNotification>(Assert.Single(command.Events));
-        Assert.Equal(payment.Id, notification.Message.PaymentId);
-        Assert.Equal(payment.ReferenceCode, notification.Message.ReferenceCode);
+        var message = Assert.Single(outboxWriter.SucceededMessages);
+        Assert.Equal(payment.Id, message.PaymentId);
+        Assert.Equal(payment.ReferenceCode, message.ReferenceCode);
     }
 
     [Fact]
-    public async Task Handle_WhenWebhookCodeIsFailure_MarksPaymentCancelledAndAddsCancelledEvent()
+    public async Task Handle_WhenWebhookCodeIsFailure_MarksPaymentCancelledAndEnqueuesCancelledMessage()
     {
         var payment = CreatePayment(
             provider: "PayOS",
@@ -117,17 +122,18 @@ public sealed class ProcessPaymentWebhookHandlerTests
                 Code = "CANCELLED"
             }
         };
+        var outboxWriter = new FakePaymentOutboxWriter();
         var repository = new FakeRepository<PaymentTransactionModel>(payment);
-        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider]);
+        var handler = new ProcessPaymentWebhookHandler(new FakeUnitOfWork(repository), [provider], outboxWriter);
         var command = new ProcessPaymentWebhookCommand("PayOS", "{}");
 
         var result = await handler.Handle(command, CancellationToken.None);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(PaymentStatus.Cancelled, payment.Status);
-        var notification = Assert.IsType<PaymentCancelledNotification>(Assert.Single(command.Events));
-        Assert.Equal(payment.Id, notification.Message.PaymentId);
-        Assert.Equal("CANCELLED", notification.Message.ReasonCode);
+        var message = Assert.Single(outboxWriter.CancelledMessages);
+        Assert.Equal(payment.Id, message.PaymentId);
+        Assert.Equal("CANCELLED", message.ReasonCode);
     }
 
     private static PaymentTransactionModel CreatePayment(string provider, string paymentLinkId, PaymentStatus status)
@@ -170,6 +176,24 @@ public sealed class ProcessPaymentWebhookHandlerTests
         public Task<PaymentWebhookResult?> VerifyWebhookAsync(string rawBody, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(WebhookResult);
+        }
+    }
+
+    private sealed class FakePaymentOutboxWriter : IPaymentOutboxWriter
+    {
+        public List<PaymentSucceeded> SucceededMessages { get; } = [];
+        public List<PaymentCancelled> CancelledMessages { get; } = [];
+
+        public Task EnqueueAsync(PaymentSucceeded message, CancellationToken cancellationToken = default)
+        {
+            SucceededMessages.Add(message);
+            return Task.CompletedTask;
+        }
+
+        public Task EnqueueAsync(PaymentCancelled message, CancellationToken cancellationToken = default)
+        {
+            CancelledMessages.Add(message);
+            return Task.CompletedTask;
         }
     }
 
