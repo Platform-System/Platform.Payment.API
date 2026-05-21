@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddHostedService<PaymentOutboxDispatcher>();
         services.AddScoped<IPaymentProvider, PayOSPaymentProvider>();
         services.AddScoped<IPaymentProvider, SandboxPaymentProvider>();
+        services.AddSingleton<SandboxCheckoutPageRenderer>();
 
         services.AddOptions<PayOSClientOptions>()
             .Bind(configuration.GetSection(ConfigurationSections.PayOS))

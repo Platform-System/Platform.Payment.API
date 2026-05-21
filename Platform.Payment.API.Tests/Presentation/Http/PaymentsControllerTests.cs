@@ -5,6 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Platform.BuildingBlocks.Responses;
 using Platform.Payment.API.Infrastructure.Configurations;
+using Platform.Payment.API.Infrastructure.Providers.Sandbox;
 using Platform.Payment.API.Presentation.Http;
 using Xunit;
 
@@ -49,6 +50,7 @@ public sealed class PaymentsControllerTests
         return new PaymentsController(
             new FakeSender(),
             Options.Create(options),
+            new SandboxCheckoutPageRenderer(),
             new FakeWebHostEnvironment(environmentName));
     }
 

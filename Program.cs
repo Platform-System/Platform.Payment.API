@@ -1,7 +1,8 @@
-using Platform.Api.Extensions;
 using Platform.Application.DependencyInjection;
+using Platform.Api.Extensions;
 using Platform.Payment.API.Infrastructure.Data;
 using Platform.Payment.API.Infrastructure.DependencyInjection;
+using Platform.Payment.API.Presentation.Grpc;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,6 @@ app.UsePlatformSwagger();
 app.UsePlatformAuthentication();
 
 app.MapControllers();
-app.MapGrpcService<Platform.Payment.API.Presentation.Grpc.PaymentIntegrationService>();
+app.MapGrpcService<PaymentIntegrationService>();
 
 app.Run();
