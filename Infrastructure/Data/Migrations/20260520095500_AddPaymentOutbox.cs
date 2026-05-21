@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Platform.Payment.API.Infrastructure.Persistence.Migrations
+namespace Platform.Payment.API.Infrastructure.Data.Migrations
 {
     public partial class AddPaymentOutbox : Migration
     {

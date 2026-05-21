@@ -9,7 +9,7 @@ using Platform.Payment.API.Infrastructure.Data;
 
 #nullable disable
 
-namespace Platform.Payment.API.Infrastructure.Persistence.Migrations
+namespace Platform.Payment.API.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
     [Migration("20260518015102_InitialCreate")]
