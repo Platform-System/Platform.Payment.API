@@ -15,3 +15,4 @@
 
 - Chua thay `AdminUI`, `MerchantUI`, `PortalUI` goi truc tiep trong repo hien tai.
 - Co kha nang endpoint nay duoc goi gian tiep qua redirect/webhook flow thay vi frontend app call thang.
+- Hien `Platform.MerchantUI` moi dung luong dat hang qua `Ordering.API`; chua thay buoc call thang sang `Payment.API` tu frontend.
