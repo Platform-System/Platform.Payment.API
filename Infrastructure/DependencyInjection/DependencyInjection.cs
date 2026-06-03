@@ -27,7 +27,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<BaseDbContext>(sp => sp.GetRequiredService<PaymentDbContext>());
-        services.AddPlatformRabbitMqMessaging(configuration);
+        services.AddRabbitMqMessaging(configuration);
         services.AddScoped<IPaymentOutboxWriter, PaymentOutboxWriter>();
         services.AddHostedService<PaymentOutboxDispatcher>();
         services.AddScoped<IPaymentProvider, PayOSPaymentProvider>();
