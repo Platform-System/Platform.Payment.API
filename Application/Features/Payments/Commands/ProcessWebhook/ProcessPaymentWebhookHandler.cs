@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Platform.Application.Abstractions.Data;
 using Platform.Application.Messaging;
+using Platform.BuildingBlocks.DateTimes;
 using Platform.BuildingBlocks.Responses;
 using Platform.Contracts.Messages.Payments;
 using Platform.Payment.API.Application.Abstractions.Messaging;
@@ -86,7 +87,7 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
                     PaymentLinkId = payment.PaymentLinkId,
                     Amount = payment.Amount,
                     Currency = payment.Currency ?? string.Empty,
-                    PaidAt = payment.PaidAt ?? DateTime.UtcNow
+                    PaidAt = payment.PaidAt ?? Clock.Now
                 },
                 cancellationToken);
 

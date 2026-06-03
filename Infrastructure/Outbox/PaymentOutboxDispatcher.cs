@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Platform.BuildingBlocks.DateTimes;
 using Platform.Contracts.Messages.Payments;
 using Platform.Messaging.Abstractions;
 using Platform.Payment.API.Infrastructure.Data;
@@ -56,7 +57,7 @@ public sealed class PaymentOutboxDispatcher : BackgroundService
             try
             {
                 await PublishAsync(messagePublisher, message, cancellationToken);
-                message.ProcessedAt = DateTime.UtcNow;
+                message.ProcessedAt = Clock.Now;
                 message.Error = null;
             }
             catch (Exception ex)
