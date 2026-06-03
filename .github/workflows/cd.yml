@@ -16,5 +16,5 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
     uses: Platform-System/Platform.CI-CD/.github/workflows/deploy-docker.yml@main
     with:
-      service_name: platform-payment-api
+      service_name: payment-api
     secrets: inherit
