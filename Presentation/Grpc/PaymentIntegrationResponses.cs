@@ -10,4 +10,16 @@ public static class PaymentIntegrationResponses
         {
             Status = ResponseStatusExtensions.Failure(errorMessage)
         };
+
+    public static GetPaymentStatusResponse FailureGetPaymentStatus(string errorMessage)
+        => new()
+        {
+            Status = ResponseStatusExtensions.Failure(errorMessage)
+        };
+
+    public static GetPaymentStatusResponse SuccessGetPaymentStatus()
+        => new()
+        {
+            Status = ResponseStatusExtensions.Success()
+        };
 }

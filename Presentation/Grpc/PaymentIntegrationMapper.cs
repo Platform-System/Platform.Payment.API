@@ -1,5 +1,6 @@
 using Platform.Common.Grpc;
 using Platform.Contracts.Payments;
+using Platform.Payment.API.Infrastructure.Persistence.Models;
 using Platform.Payment.Grpc;
 
 namespace Platform.Payment.API.Presentation.Grpc;
@@ -39,6 +40,27 @@ public static class PaymentIntegrationMapper
                 Amount = response.Amount,
                 Currency = response.Currency ?? string.Empty,
                 Status = response.Status
+            }
+        };
+    }
+
+    public static GetPaymentStatusResponse ToStatusResponse(this PaymentTransactionModel model)
+    {
+        return new GetPaymentStatusResponse
+        {
+            Status = ResponseStatusExtensions.Success(),
+            Data = new PaymentStatusData
+            {
+                PaymentId = model.Id.ToString(),
+                ReferenceType = model.ReferenceType,
+                ReferenceId = model.ReferenceId.ToString(),
+                ReferenceCode = model.ReferenceCode,
+                Provider = model.Provider,
+                PaymentLinkId = model.PaymentLinkId ?? string.Empty,
+                Amount = model.Amount,
+                Currency = model.Currency ?? string.Empty,
+                Status = model.Status.ToString(),
+                PaidAt = model.PaidAt?.ToUniversalTime().ToString("O") ?? string.Empty
             }
         };
     }
