@@ -19,5 +19,9 @@ public sealed class PaymentDbContext : BaseDbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PaymentDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<OutboxMessageModel>()
+            .HasIndex(x => x.ProcessedAt);
+        modelBuilder.Entity<OutboxMessageModel>()
+            .HasIndex(x => x.NextRetryAt);
     }
 }
