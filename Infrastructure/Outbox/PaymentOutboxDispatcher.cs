@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Platform.BuildingBlocks.DateTimes;
 using Platform.Contracts.Messages.Payments;
 using Platform.Messaging.Abstractions;
+using Platform.Messaging.Configurations;
 using Platform.Messaging.Helpers;
 using Platform.Messaging.Hosting;
 using Platform.Payment.API.Infrastructure.Data;
@@ -55,6 +56,14 @@ public sealed class PaymentOutboxDispatcher : KafkaOutboxDispatcherBase<ClaimedO
     }
 
     protected override int GetRetryCount(ClaimedOutboxMessage message) => message.RetryCount;
+
+    protected override OutboxRetryConfiguration GetRetryConfiguration(ClaimedOutboxMessage message)
+        => message.MessageType switch
+        {
+            PaymentOutboxMessageTypes.PaymentSucceeded => OutboxRetryConfiguration.Create(_paymentSucceededOptions.MaxRetryCount.GetValueOrDefault()),
+            PaymentOutboxMessageTypes.PaymentCancelled => OutboxRetryConfiguration.Create(_paymentCancelledOptions.MaxRetryCount.GetValueOrDefault()),
+            _ => base.GetRetryConfiguration(message)
+        };
 
     protected override void SetRetryCount(ClaimedOutboxMessage message, int retryCount) => message.RetryCount = retryCount;
 
