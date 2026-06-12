@@ -79,6 +79,7 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
             await _outboxWriter.EnqueueAsync(
                 new PaymentSucceeded
                 {
+                    MessageId = Guid.NewGuid(),
                     PaymentId = payment.Id,
                     ReferenceType = payment.ReferenceType,
                     ReferenceId = payment.ReferenceId,
@@ -103,6 +104,7 @@ public sealed class ProcessPaymentWebhookHandler : ICommandHandler<ProcessPaymen
         await _outboxWriter.EnqueueAsync(
             new PaymentCancelled
             {
+                MessageId = Guid.NewGuid(),
                 PaymentId = payment.Id,
                 ReferenceType = payment.ReferenceType,
                 ReferenceId = payment.ReferenceId,

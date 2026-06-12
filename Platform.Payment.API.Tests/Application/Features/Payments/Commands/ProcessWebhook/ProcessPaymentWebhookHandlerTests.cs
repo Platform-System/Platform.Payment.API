@@ -102,6 +102,7 @@ public sealed class ProcessPaymentWebhookHandlerTests
         Assert.True(result.IsSuccess);
         Assert.Equal(PaymentStatus.Paid, payment.Status);
         var message = Assert.Single(outboxWriter.SucceededMessages);
+        Assert.NotEqual(Guid.Empty, message.MessageId);
         Assert.Equal(payment.Id, message.PaymentId);
         Assert.Equal(payment.ReferenceCode, message.ReferenceCode);
     }
@@ -132,6 +133,7 @@ public sealed class ProcessPaymentWebhookHandlerTests
         Assert.True(result.IsSuccess);
         Assert.Equal(PaymentStatus.Cancelled, payment.Status);
         var message = Assert.Single(outboxWriter.CancelledMessages);
+        Assert.NotEqual(Guid.Empty, message.MessageId);
         Assert.Equal(payment.Id, message.PaymentId);
         Assert.Equal("CANCELLED", message.ReasonCode);
     }
