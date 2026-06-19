@@ -145,6 +145,7 @@ public sealed class CreatePaymentHandlerTests
             Amount = 100_000,
             Currency = "VND",
             Description = "Order 123456",
+            UserId = Guid.NewGuid(),
             Items = []
         };
     }
@@ -167,7 +168,8 @@ public sealed class CreatePaymentHandlerTests
             PaymentLinkId = paymentLinkId,
             Amount = request.Amount,
             Currency = request.Currency,
-            Status = status
+            Status = status,
+            UserId = request.UserId
         };
     }
 

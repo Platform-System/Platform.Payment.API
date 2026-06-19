@@ -151,7 +151,8 @@ public sealed class ProcessPaymentWebhookHandlerTests
             CheckoutUrl = "https://pay.local/checkout",
             Amount = 100_000,
             Currency = "VND",
-            Status = status
+            Status = status,
+            UserId = Guid.NewGuid()
         };
     }
 
