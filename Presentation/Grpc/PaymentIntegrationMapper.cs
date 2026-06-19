@@ -7,9 +7,9 @@ namespace Platform.Payment.API.Presentation.Grpc;
 
 public static class PaymentIntegrationMapper
 {
-    public static Platform.Contracts.Payments.CreatePaymentRequest ToContractRequest(this CreatePaymentLinkRequest request)
+    public static CreatePaymentRequest ToContractRequest(this CreatePaymentLinkRequest request)
     {
-        return new Platform.Contracts.Payments.CreatePaymentRequest
+        return new CreatePaymentRequest
         {
             ReferenceType = request.ReferenceType,
             ReferenceId = Guid.TryParse(request.ReferenceId, out var referenceId) ? referenceId : Guid.Empty,
@@ -23,7 +23,8 @@ public static class PaymentIntegrationMapper
                 Name = item.Name,
                 Quantity = item.Quantity,
                 Price = item.Price
-            }).ToList()
+            }).ToList(),
+            UserId = Guid.TryParse(request.UserId, out var userId) ? userId : Guid.Empty
         };
     }
 

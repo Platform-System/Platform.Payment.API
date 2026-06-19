@@ -1,10 +1,9 @@
-using Platform.Contracts.Payments;
 using Platform.Payment.API.Domain.Entities;
 using Platform.Payment.API.Infrastructure.Persistence.Models;
 
 namespace Platform.Payment.API.Application.Features.Payments.Mappers;
 
-public static class PaymentTransactionMapper
+public static class PaymentTransactionPersistenceMapper
 {
     public static PaymentTransaction ToDomain(this PaymentTransactionModel model)
     {
@@ -19,7 +18,8 @@ public static class PaymentTransactionMapper
             model.Amount,
             model.Currency,
             model.PaidAt,
-            model.Status);
+            model.Status,
+            model.UserId);
     }
 
     public static PaymentTransactionModel ToModel(this PaymentTransaction payment)
@@ -36,7 +36,8 @@ public static class PaymentTransactionMapper
             Amount = payment.Amount,
             Currency = payment.Currency,
             PaidAt = payment.PaidAt,
-            Status = payment.Status
+            Status = payment.Status,
+            UserId = payment.UserId
         };
     }
 
@@ -52,18 +53,6 @@ public static class PaymentTransactionMapper
         model.Currency = payment.Currency;
         model.PaidAt = payment.PaidAt;
         model.Status = payment.Status;
-    }
-
-    public static PaymentLinkResponse ToResponse(this PaymentTransactionModel model)
-    {
-        return new PaymentLinkResponse
-        {
-            PaymentId = model.Id,
-            CheckoutUrl = model.CheckoutUrl,
-            PaymentLinkId = model.PaymentLinkId,
-            Amount = model.Amount,
-            Currency = model.Currency,
-            Status = model.Status.ToString()
-        };
+        model.UserId = payment.UserId;
     }
 }

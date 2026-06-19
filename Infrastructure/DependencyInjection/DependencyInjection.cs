@@ -1,16 +1,16 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Platform.Infrastructure.Data;
 using Platform.Infrastructure.DependencyInjection;
 using Platform.Messaging.DependencyInjection;
-using Platform.Payment.API.Application.Abstractions.Providers;
 using Platform.Payment.API.Application.Abstractions.Messaging;
+using Platform.Payment.API.Application.Abstractions.Providers;
 using Platform.Payment.API.Infrastructure.Configurations;
 using Platform.Payment.API.Infrastructure.Constants;
 using Platform.Payment.API.Infrastructure.Data;
 using Platform.Payment.API.Infrastructure.Outbox;
 using Platform.Payment.API.Infrastructure.Providers.PayOS;
 using Platform.Payment.API.Infrastructure.Providers.Sandbox;
+using Platform.SystemContext.DependencyInjection;
 
 namespace Platform.Payment.API.Infrastructure.DependencyInjection;
 
@@ -20,6 +20,7 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("PaymentDb");
 
+        services.AddSystemContext();
         services.AddInfrastructure(configuration);
         services.AddDbContext<PaymentDbContext>(options =>
         {

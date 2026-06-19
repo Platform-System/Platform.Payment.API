@@ -17,12 +17,13 @@ public sealed class PaymentTransaction : AggregateRoot
     public string? Currency { get; private set; }
     public DateTime? PaidAt { get; private set; }
     public PaymentStatus Status { get; private set; }
+    public Guid UserId { get; private set; }
 
     private PaymentTransaction()
     {
     }
 
-    public PaymentTransaction(string referenceType, Guid referenceId, long referenceCode, string provider)
+    public PaymentTransaction(string referenceType, Guid referenceId, long referenceCode, string provider, Guid userId)
     {
         if (string.IsNullOrWhiteSpace(referenceType))
             throw new InvalidOperationException(PaymentErrors.InvalidReferenceType.Message);
@@ -36,11 +37,15 @@ public sealed class PaymentTransaction : AggregateRoot
         if (string.IsNullOrWhiteSpace(provider))
             throw new InvalidOperationException(PaymentErrors.InvalidProvider.Message);
 
+        if (userId == Guid.Empty)
+            throw new InvalidOperationException("User ID is required.");
+
         ReferenceType = referenceType;
         ReferenceId = referenceId;
         ReferenceCode = referenceCode;
         Provider = provider;
         Status = PaymentStatus.Pending;
+        UserId = userId;
     }
 
     public static PaymentTransaction Load(
@@ -54,7 +59,8 @@ public sealed class PaymentTransaction : AggregateRoot
         long amount,
         string? currency,
         DateTime? paidAt,
-        PaymentStatus status)
+        PaymentStatus status,
+        Guid userId)
     {
         return new PaymentTransaction
         {
@@ -68,7 +74,8 @@ public sealed class PaymentTransaction : AggregateRoot
             Amount = amount,
             Currency = currency,
             PaidAt = paidAt,
-            Status = status
+            Status = status,
+            UserId = userId
         };
     }
 

@@ -95,7 +95,8 @@ public sealed class CreatePaymentHandler : ICommandHandler<CreatePaymentCommand,
             command.Request.ReferenceType,
             command.Request.ReferenceId,
             command.Request.ReferenceCode,
-            provider.Name);
+            provider.Name,
+            command.Request.UserId);
 
         var setCheckoutResult = payment.SetCheckout(
             paymentLink.PaymentLinkId,

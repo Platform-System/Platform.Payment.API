@@ -1,9 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Platform.BuildingBlocks.Requests;
 using Platform.BuildingBlocks.Responses;
 using Platform.Contracts.Payments;
 using Platform.Payment.API.Application.Features.Payments.Commands.ProcessWebhook;
+using Platform.Payment.API.Application.Features.Payments.Queries.GetCurrentUserTransactions;
 using Platform.Payment.API.Infrastructure.Configurations;
 using Platform.Payment.API.Infrastructure.Providers.Sandbox;
 using Microsoft.Extensions.Options;
@@ -31,6 +33,21 @@ public sealed class PaymentsController : ControllerBase
         _sandboxOptions = sandboxOptions.Value;
         _sandboxCheckoutPageRenderer = sandboxCheckoutPageRenderer;
         _environment = environment;
+    }
+
+    /// <summary>
+    /// Gets all payment transactions for the logged in user.
+    /// </summary>
+    [HttpGet("me/transactions")]
+    public async Task<IActionResult> GetCurrentUserTransactions([FromQuery] PagingRequest request, CancellationToken cancellationToken)
+    {
+        var query = new GetCurrentUserTransactionsQuery
+        {
+            Page = request.Page,
+            PageSize = request.PageSize
+        };
+        var result = await _sender.Send(query, cancellationToken);
+        return result.ToActionResult();
     }
 
     /// <summary>

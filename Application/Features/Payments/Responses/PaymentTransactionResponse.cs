@@ -1,12 +1,10 @@
-using Platform.Domain.Common;
-using Platform.Payment.API.Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
-namespace Platform.Payment.API.Infrastructure.Persistence.Models;
+namespace Platform.Payment.API.Application.Features.Payments.Responses;
 
-[Table("Payments")]
-public sealed class PaymentTransactionModel : Entity
+public sealed class PaymentTransactionResponse
 {
+    public Guid PaymentId { get; set; }
     public string ReferenceType { get; set; } = string.Empty;
     public Guid ReferenceId { get; set; }
     public long ReferenceCode { get; set; }
@@ -16,6 +14,6 @@ public sealed class PaymentTransactionModel : Entity
     public long Amount { get; set; }
     public string? Currency { get; set; }
     public DateTime? PaidAt { get; set; }
-    public PaymentStatus Status { get; set; }
-    public Guid UserId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
