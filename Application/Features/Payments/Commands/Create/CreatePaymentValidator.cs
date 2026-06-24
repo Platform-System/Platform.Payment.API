@@ -2,9 +2,9 @@ using FluentValidation;
 
 namespace Platform.Payment.API.Application.Features.Payments.Commands.Create;
 
-public sealed class CreatePaymentCommandValidator : AbstractValidator<CreatePaymentCommand>
+public sealed class CreatePaymentValidator : AbstractValidator<CreatePaymentCommand>
 {
-    public CreatePaymentCommandValidator()
+    public CreatePaymentValidator()
     {
         RuleFor(x => x.Request.ReferenceType).NotEmpty();
         RuleFor(x => x.Request.ReferenceId).NotEmpty();
