@@ -8,7 +8,6 @@ using Platform.Payment.API.Application.Features.Payments.Mappers;
 using Platform.Payment.API.Domain.Entities;
 using Platform.Payment.API.Domain.Enums;
 using Platform.Payment.API.Infrastructure.Persistence.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Payment.API.Application.Features.Payments.Commands.Create;
 
@@ -26,12 +25,11 @@ public sealed class CreatePaymentHandler : ICommandHandler<CreatePaymentCommand,
     public async Task<Result<PaymentLinkResponse>> Handle(CreatePaymentCommand command, CancellationToken cancellationToken)
     {
         var repository = _unitOfWork.GetRepository<PaymentTransactionModel>();
-        var pendingPayments = await repository
-            .GetQueryable()
-            .Where(x => x.ReferenceType == command.Request.ReferenceType
+        var pendingPayments = await repository.GetAllAsync(
+            x => x.ReferenceType == command.Request.ReferenceType
                 && x.ReferenceId == command.Request.ReferenceId
-                && x.Status == PaymentStatus.Pending)
-            .ToListAsync(cancellationToken);
+                && x.Status == PaymentStatus.Pending,
+            cancellationToken);
 
         var existingPaymentModel = pendingPayments.FirstOrDefault(x =>
             string.Equals(x.Provider, command.Request.Provider, StringComparison.OrdinalIgnoreCase));

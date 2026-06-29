@@ -260,12 +260,6 @@ public sealed class CreatePaymentHandlerTests
 
         public int AddCallCount { get; private set; }
         public int Count => _entities.Count;
-
-        public IQueryable<T> GetQueryable()
-        {
-            return new TestAsyncEnumerable<T>(_entities);
-        }
-
         public Task AddAsync(T entity, CancellationToken cancellationToken = default)
         {
             AddCallCount++;
@@ -275,7 +269,10 @@ public sealed class CreatePaymentHandlerTests
 
         public Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes) => throw new NotSupportedException();
         public Task<List<T>> GetAllAsync(CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes) => throw new NotSupportedException();
-        public Task<List<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes) => throw new NotSupportedException();
+        public Task<List<T>> GetAllAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes)
+        {
+            return Task.FromResult(_entities.AsQueryable().Where(predicate).ToList());
+        }
         public Task<PagedResult<T>> GetPagedAsync(int page, int pageSize, Expression<Func<T, bool>>? filter = null, Expression<Func<T, object>>? orderBy = null, bool isDescending = false, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes) => throw new NotSupportedException();
         public Task<T?> FindAsync(Expression<Func<T, bool>> predicate, bool asNoTracking = true, CancellationToken cancellationToken = default, params Expression<Func<T, object>>[] includes) => throw new NotSupportedException();
         public void Update(T entity) => throw new NotSupportedException();
